@@ -3,8 +3,8 @@
   <board id="nucleo-f446re">
     <name>NUCLEO-F446RE</name>
     <mcuId>stm32f446retx</mcuId>
-    <dbgIF>JTAG</dbgIF>
     <dbgIF>SWD</dbgIF>
+    <dbgIF>JTAG</dbgIF>
     <dbgDEV>ST-LinkV2-1</dbgDEV>
   </board>
 </targetDefinitions>

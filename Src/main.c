@@ -49,14 +49,14 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "fatfs.h"
-#include "sd_io.h"
 
 /* USER CODE BEGIN Includes */
+#include "sd_io.h"
 
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef hspi2;
+SPI_HandleTypeDef hspi1;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
@@ -71,8 +71,8 @@ DMA_HandleTypeDef hdma_usart2_tx;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_SPI2_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -110,8 +110,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_FATFS_Init();
-  MX_SPI2_Init();
   MX_USART2_UART_Init();
+  MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
   uint8_t readBuf[512];
@@ -123,7 +123,7 @@ int main(void)
 	  }
   }
 
-  SPI_IO_Attach(&hspi2);
+  SPI_IO_Attach(&hspi1);
 
   HAL_Delay(2);
 
@@ -146,11 +146,15 @@ int main(void)
 
   FRESULT ret = f_mount(&newFAT, SD_Path, 0);
 //  ret = f_mkfs(SD_Path, 0, 0);
-  ret = f_open(&newFIL, "testies2.txt", FA_CREATE_ALWAYS | FA_WRITE);
+  ret = f_open(&newFIL, "testies4.txt", FA_CREATE_ALWAYS | FA_WRITE);
   ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
   ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
   ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
   ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
+  ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
+    ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
+    ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
+    ret = f_write(&newFIL, fucktard, sizeof(fucktard), &bw);
 //  ret = f_sync(&newFIL);
   ret = f_close(&newFIL);
 
@@ -232,23 +236,23 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* SPI2 init function */
-static void MX_SPI2_Init(void)
+/* SPI1 init function */
+static void MX_SPI1_Init(void)
 {
 
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -300,6 +304,9 @@ static void MX_DMA_Init(void)
         * EXTI
         * Free pins are configured automatically as Analog (this feature is enabled through 
         * the Code Generation settings)
+     PB13   ------> SPI2_SCK
+     PB14   ------> SPI2_MISO
+     PB15   ------> SPI2_MOSI
 */
 static void MX_GPIO_Init(void)
 {
@@ -338,11 +345,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA0 PA1 PA4 PA6 
-                           PA7 PA8 PA9 PA10 
-                           PA11 PA12 PA15 */
+                           PA7 PA8 PA9 PA11 
+                           PA12 PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6 
-                          |GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10 
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_15;
+                          |GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_11 
+                          |GPIO_PIN_12|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -354,14 +361,30 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB2 PB10 PB12 
-                           PB4 PB5 PB6 PB7 
-                           PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_10|GPIO_PIN_12 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
-                          |GPIO_PIN_8|GPIO_PIN_9;
+  /*Configure GPIO pins : PB0 PB1 PB2 PB10 
+                           PB12 PB6 PB7 PB8 
+                           PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10 
+                          |GPIO_PIN_12|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8 
+                          |GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB13 PB15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SD_CS_Pin */

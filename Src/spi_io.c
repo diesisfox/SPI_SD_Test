@@ -62,7 +62,8 @@ inline void SPI_Freq_High (void) {
 
 inline void SPI_Freq_Low (void) {
 	HAL_SPI_DeInit(hspi);
-	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+//	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
 	HAL_SPI_Init(hspi);
 }
 
